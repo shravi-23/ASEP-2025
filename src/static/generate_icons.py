@@ -43,16 +43,16 @@ def create_icon(size, output_path, maskable=False):
 
 def main():
     # Generate regular icons
-    create_icon(192, 'src/static/icons/icon-192.png')
-    create_icon(512, 'src/static/icons/icon-512.png')
+    create_icon(192, 'src/static/images/icon-192.png')
+    create_icon(512, 'src/static/images/icon-512.png')
     
     # Generate iOS specific icons
-    create_icon(152, 'src/static/icons/icon-152.png')  # iPad
-    create_icon(167, 'src/static/icons/icon-167.png')  # iPad Pro
-    create_icon(180, 'src/static/icons/icon-180.png')  # iPhone
+    create_icon(152, 'src/static/images/icon-152.png')  # iPad
+    create_icon(167, 'src/static/images/icon-167.png')  # iPad Pro
+    create_icon(180, 'src/static/images/icon-180.png')  # iPhone
     
     # Generate maskable icons
-    create_icon(192, 'src/static/icons/icon-192-maskable.png', maskable=True)
+    create_icon(192, 'src/static/images/icon-192-maskable.png', maskable=True)
 
 if __name__ == '__main__':
     main() 

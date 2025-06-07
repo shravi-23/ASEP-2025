@@ -5,59 +5,86 @@ import numpy as np
 from datetime import datetime, timedelta
 import os
 import json
+import base64
 from pathlib import Path
 from utils.report_generator import ReportGenerator
 
+def get_base64_encoded_image(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode()
+
+def load_css():
+    with open('src/static/styles.css') as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
 # Set page configuration at the very beginning
+icon_path = "src/static/images/icon-192.png"
 st.set_page_config(
     page_title="Resource Optimizer",
-    page_icon="src/static/icons/icon-192.png",
+    page_icon=icon_path,
     layout="wide"
 )
 
-# Add manifest, favicon, and iOS-specific meta tags
-st.markdown("""
-    <link rel="manifest" href="src/static/manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="src/static/icons/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="src/static/icons/icon-512.png">
+# Load custom CSS
+load_css()
+
+# Get base64 encoded images
+icon_192 = get_base64_encoded_image("src/static/images/icon-192.png")
+icon_512 = get_base64_encoded_image("src/static/images/icon-512.png")
+icon_152 = get_base64_encoded_image("src/static/images/icon-152.png")
+icon_167 = get_base64_encoded_image("src/static/images/icon-167.png")
+icon_180 = get_base64_encoded_image("src/static/images/icon-180.png")
+
+# Add manifest and favicon links with base64 encoded images
+st.markdown(f"""
+    <link rel="manifest" href="data:application/json;charset=utf-8,{json.dumps({
+        'name': 'Resource Optimizer',
+        'short_name': 'ResOpt',
+        'icons': [
+            {
+                'src': f'data:image/png;base64,{icon_192}',
+                'sizes': '192x192',
+                'type': 'image/png'
+            },
+            {
+                'src': f'data:image/png;base64,{icon_512}',
+                'sizes': '512x512',
+                'type': 'image/png'
+            }
+        ],
+        'start_url': '/',
+        'display': 'standalone',
+        'theme_color': '#3498db',
+        'background_color': '#ffffff'
+    })}">
+    
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/png;base64,{icon_192}">
+    <link rel="icon" type="image/png" sizes="512x512" href="data:image/png;base64,{icon_512}">
     
     <!-- iOS specific tags -->
-    <link rel="apple-touch-icon" href="src/static/icons/icon-192.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="src/static/icons/icon-152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="src/static/icons/icon-180.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="src/static/icons/icon-167.png">
+    <link rel="apple-touch-icon" href="data:image/png;base64,{icon_180}">
+    <link rel="apple-touch-icon" sizes="152x152" href="data:image/png;base64,{icon_152}">
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,{icon_180}">
+    <link rel="apple-touch-icon" sizes="167x167" href="data:image/png;base64,{icon_167}">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Resource Optimizer">
-    
     <meta name="theme-color" content="#3498db">
 """, unsafe_allow_html=True)
 
-# Load custom CSS
-with open('src/static/styles.css') as f:
-    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-
 # Add logo and title in a container
-st.markdown("""
+st.markdown(f"""
     <div class="logo-container" style="display: flex; align-items: center; margin-bottom: 1rem;">
         <div class="logo" style="
             width: 60px;
             height: 60px;
-            background: linear-gradient(45deg, #3498db, #2ecc71);
+            background-image: url(data:image/png;base64,{icon_192});
+            background-size: cover;
             border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             margin-right: 1rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        ">
-            <span style="
-                color: white;
-                font-size: 24px;
-                font-weight: bold;
-            ">AI</span>
-        </div>
+        "></div>
         <div>
             <h1 style="margin: 0; color: #2c3e50;">Resource Optimizer</h1>
             <p style="margin: 0; color: #7f8c8d;">Powered by LSTM + ARIMA</p>
