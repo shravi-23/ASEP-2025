@@ -1,34 +1,38 @@
 import numpy as np
 import pandas as pd
 import warnings
-import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
+import torch
+import torch.nn as nn
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.preprocessing import MinMaxScaler
 from typing import Tuple, List
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
-tf.get_logger().setLevel('ERROR')
+
+class LSTMModel(nn.Module):
+    def __init__(self, input_size=1, hidden_size=50, num_layers=2):
+        super(LSTMModel, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, 1)
+    
+    def forward(self, x):
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+        out, _ = self.lstm(x, (h0, c0))
+        out = self.fc(out[:, -1, :])
+        return out
 
 class HybridForecastingModel:
     def __init__(self, sequence_length: int = 10):
         self.sequence_length = sequence_length
         self.scaler = MinMaxScaler()
-        self.lstm_model = self._build_lstm()
+        self.lstm_model = LSTMModel()
         self.arima_model = None
         self.arima_order = None
         self.last_values = None
-        
-    def _build_lstm(self):
-        model = Sequential([
-            LSTM(50, activation='relu', input_shape=(self.sequence_length, 1), return_sequences=True),
-            LSTM(50, activation='relu'),
-            Dense(1)
-        ])
-        model.compile(optimizer='adam', loss='mse')
-        return model
         
     def _prepare_sequences(self, data):
         X, y = [], []
@@ -47,8 +51,19 @@ class HybridForecastingModel:
         
         # Train LSTM
         X, y = self._prepare_sequences(scaled_data)
-        X = X.reshape((X.shape[0], X.shape[1], 1))
-        self.lstm_model.fit(X, y, epochs=50, verbose=0)
+        X = torch.FloatTensor(X.reshape((X.shape[0], X.shape[1], 1)))
+        y = torch.FloatTensor(y)
+        
+        optimizer = torch.optim.Adam(self.lstm_model.parameters())
+        criterion = nn.MSELoss()
+        
+        self.lstm_model.train()
+        for epoch in range(50):
+            optimizer.zero_grad()
+            outputs = self.lstm_model(X)
+            loss = criterion(outputs, y)
+            loss.backward()
+            optimizer.step()
         
         # Train ARIMA
         self.arima_order = arima_order
@@ -58,10 +73,11 @@ class HybridForecastingModel:
     def predict(self, steps: int = 12) -> np.ndarray:
         """Generate hybrid predictions"""
         # LSTM prediction
-        last_sequence = self.lstm_model.predict(
-            np.array([self.last_values]).reshape(1, self.sequence_length, 1)
-        )
-        lstm_pred = last_sequence[0]
+        self.lstm_model.eval()
+        with torch.no_grad():
+            last_sequence = torch.FloatTensor(self.last_values).reshape(1, self.sequence_length, 1)
+            lstm_pred = self.lstm_model(last_sequence)
+            lstm_pred = lstm_pred.numpy()
         
         # ARIMA prediction
         arima_pred = self.arima_model.forecast(steps=steps)

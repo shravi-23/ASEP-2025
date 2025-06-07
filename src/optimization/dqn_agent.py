@@ -1,9 +1,21 @@
 import numpy as np
 from collections import deque
 import random
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.optimizers import Adam
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+class DQNNetwork(nn.Module):
+    def __init__(self, state_size, action_size):
+        super(DQNNetwork, self).__init__()
+        self.fc1 = nn.Linear(state_size, 24)
+        self.fc2 = nn.Linear(24, 24)
+        self.fc3 = nn.Linear(24, action_size)
+        
+    def forward(self, x):
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        return self.fc3(x)
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -15,16 +27,10 @@ class DQNAgent:
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
         self.learning_rate = 0.001
-        self.model = self._build_model()
-
-    def _build_model(self):
-        model = Sequential([
-            Dense(24, input_dim=self.state_size, activation='relu'),
-            Dense(24, activation='relu'),
-            Dense(self.action_size, activation='linear')
-        ])
-        model.compile(loss='mse', optimizer=Adam(learning_rate=self.learning_rate))
-        return model
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = DQNNetwork(state_size, action_size).to(self.device)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=self.learning_rate)
+        self.criterion = nn.MSELoss()
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -32,26 +38,33 @@ class DQNAgent:
     def act(self, state):
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size)
-        act_values = self.model.predict(state.reshape(1, -1), verbose=0)
-        return np.argmax(act_values[0])
+        with torch.no_grad():
+            state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
+            act_values = self.model(state_tensor)
+            return np.argmax(act_values.cpu().numpy())
 
     def replay(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)
-        states = np.array([i[0] for i in minibatch])
-        actions = np.array([i[1] for i in minibatch])
-        rewards = np.array([i[2] for i in minibatch])
-        next_states = np.array([i[3] for i in minibatch])
-        dones = np.array([i[4] for i in minibatch])
-
-        states = np.squeeze(states)
-        next_states = np.squeeze(next_states)
-
-        targets = rewards + self.gamma * (np.amax(self.model.predict(next_states, verbose=0), axis=1))*(1-dones)
-        targets_full = self.model.predict(states, verbose=0)
         
-        ind = np.array([i for i in range(batch_size)])
-        targets_full[[ind], [actions]] = targets
+        states = torch.FloatTensor(np.array([i[0] for i in minibatch])).to(self.device)
+        actions = torch.LongTensor(np.array([i[1] for i in minibatch])).to(self.device)
+        rewards = torch.FloatTensor(np.array([i[2] for i in minibatch])).to(self.device)
+        next_states = torch.FloatTensor(np.array([i[3] for i in minibatch])).to(self.device)
+        dones = torch.FloatTensor(np.array([i[4] for i in minibatch])).to(self.device)
 
-        self.model.fit(states, targets_full, epochs=1, verbose=0)
+        # Current Q values
+        current_q_values = self.model(states).gather(1, actions.unsqueeze(1))
+        
+        # Next Q values
+        with torch.no_grad():
+            next_q_values = self.model(next_states).max(1)[0]
+            target_q_values = rewards + (1 - dones) * self.gamma * next_q_values
+
+        # Compute loss and update
+        loss = self.criterion(current_q_values.squeeze(), target_q_values)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay 
