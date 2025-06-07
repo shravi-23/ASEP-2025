@@ -9,7 +9,20 @@ from pathlib import Path
 from utils.report_generator import ReportGenerator
 
 # Set page configuration at the very beginning
-st.set_page_config(page_title="LSTM + ARIMA MODEL", layout="wide")
+st.set_page_config(
+    page_title="Resource Optimizer",
+    page_icon="src/static/icons/icon-192.png",
+    layout="wide"
+)
+
+# Add manifest and favicon links
+st.markdown("""
+    <link rel="manifest" href="src/static/manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="src/static/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="src/static/icons/icon-512.png">
+    <link rel="apple-touch-icon" href="src/static/icons/icon-192.png">
+    <meta name="theme-color" content="#3498db">
+""", unsafe_allow_html=True)
 
 # Load custom CSS
 with open('src/static/styles.css') as f:
