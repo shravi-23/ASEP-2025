@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Resource Optimizer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(120deg, #1a365d 0%, #2d3748 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+        }
+        .upload-area {
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #4299e1;
+            background-color: #ebf8ff;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-cloud text-3xl mr-3"></i>
+                    <h1 class="text-2xl font-bold">Cloud Resource Optimizer</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="#" class="hover:text-blue-200 transition-colors duration-200">Documentation</a>
+                    <a href="#" class="hover:text-blue-200 transition-colors duration-200">About</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="mb-12 text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Intelligent Resource Allocation</h2>
+            <p class="text-xl text-gray-600">Upload your dataset and get AI-powered resource optimization recommendations</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-brain text-blue-500 text-2xl mr-3"></i>
+                    <h3 class="text-xl font-semibold">AI-Powered</h3>
+                </div>
+                <p class="text-gray-600">Utilizes advanced machine learning models for precise resource predictions</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-chart-line text-green-500 text-2xl mr-3"></i>
+                    <h3 class="text-xl font-semibold">Real-time Analysis</h3>
+                </div>
+                <p class="text-gray-600">Continuous monitoring and optimization of cloud resources</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-coins text-yellow-500 text-2xl mr-3"></i>
+                    <h3 class="text-xl font-semibold">Cost Efficient</h3>
+                </div>
+                <p class="text-gray-600">Optimize resource allocation to reduce cloud infrastructure costs</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-8 mb-12">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-4">Upload Dataset</h2>
+                <div class="upload-area rounded-lg p-8">
+                    <div class="flex flex-col items-center justify-center">
+                        <i class="fas fa-cloud-upload-alt text-5xl text-blue-500 mb-4"></i>
+                        <p class="text-lg text-gray-600 mb-2">Drag and drop your CSV file here or</p>
+                        <button id="browse" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors duration-200">
+                            Browse Files
+                        </button>
+                        <p class="text-sm text-gray-500 mt-2">Supported format: CSV</p>
+                    </div>
+                    <input type="file" id="fileInput" class="hidden" accept=".csv" />
+                </div>
+                <p id="fileName" class="mt-4 text-sm text-gray-500"></p>
+            </div>
+
+            <div id="loading" class="hidden">
+                <div class="flex items-center justify-center p-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                    <span class="ml-4 text-lg">Processing your data...</span>
+                </div>
+            </div>
+
+            <div id="error" class="hidden mt-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded"></div>
+
+            <div id="results" class="hidden">
+                <h2 class="text-2xl font-bold mb-6">Optimization Results</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-medium mb-2">CPU Request</h3>
+                        <p id="cpuRequest" class="text-3xl font-bold"></p>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-medium mb-2">Memory Request</h3>
+                        <p id="memoryRequest" class="text-3xl font-bold"></p>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-medium mb-2">Replicas</h3>
+                        <p id="replicas" class="text-3xl font-bold"></p>
+                    </div>
+                    <div class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-medium mb-2">Predicted Utilization</h3>
+                        <p id="predictedUtilization" class="text-3xl font-bold"></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-xl font-semibold mb-4">Resource Utilization Trend</h3>
+                        <canvas id="utilizationChart"></canvas>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-xl font-semibold mb-4">Pod Distribution</h3>
+                        <canvas id="podChart"></canvas>
+                    </div>
+                </div>
+
+                <p id="timestamp" class="mt-6 text-sm text-gray-500"></p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="gradient-bg text-white py-8">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p>&copy; 2024 Cloud Resource Optimizer. All rights reserved.</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:text-blue-200">Privacy Policy</a>
+                    <a href="#" class="hover:text-blue-200">Terms of Service</a>
+                    <a href="#" class="hover:text-blue-200">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let utilizationChart = null;
+        let podChart = null;
+
+        document.getElementById('browse').addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('fileName').textContent = `Selected file: ${file.name}`;
+            document.getElementById('error').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('results').classList.add('hidden');
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('cpuRequest').textContent = data.results.cpu_request;
+                    document.getElementById('memoryRequest').textContent = data.results.memory_request;
+                    document.getElementById('replicas').textContent = data.results.replicas;
+                    document.getElementById('predictedUtilization').textContent = data.results.predicted_utilization;
+                    document.getElementById('timestamp').textContent = `Last updated: ${data.results.timestamp}`;
+                    
+                    // Update charts
+                    updateCharts(data.results);
+                    
+                    document.getElementById('results').classList.remove('hidden');
+                } else {
+                    document.getElementById('error').textContent = data.error;
+                    document.getElementById('error').classList.remove('hidden');
+                }
+            } catch (error) {
+                document.getElementById('error').textContent = 'An error occurred while processing your request.';
+                document.getElementById('error').classList.remove('hidden');
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+            }
+        });
+
+        function updateCharts(data) {
+            const vizData = data.visualization_data;
+            
+            const utilizationData = {
+                labels: vizData.utilization.labels,
+                datasets: [{
+                    label: 'CPU Utilization',
+                    data: vizData.utilization.cpu,
+                    borderColor: 'rgb(59, 130, 246)',
+                    tension: 0.4,
+                    fill: false
+                }, {
+                    label: 'Memory Utilization',
+                    data: vizData.utilization.memory,
+                    borderColor: 'rgb(34, 197, 94)',
+                    tension: 0.4,
+                    fill: false
+                }]
+            };
+
+            const podData = {
+                labels: ['Running Pods', 'Available Pods'],
+                datasets: [{
+                    data: [vizData.pods.running, vizData.pods.available],
+                    backgroundColor: ['rgb(147, 51, 234)', 'rgb(209, 213, 219)']
+                }]
+            };
+
+            // Destroy existing charts if they exist
+            if (utilizationChart) utilizationChart.destroy();
+            if (podChart) podChart.destroy();
+
+            // Create new charts
+            utilizationChart = new Chart(document.getElementById('utilizationChart'), {
+                type: 'line',
+                data: utilizationData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            podChart = new Chart(document.getElementById('podChart'), {
+                type: 'doughnut',
+                data: podData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html> 

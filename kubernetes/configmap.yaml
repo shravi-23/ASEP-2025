@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: resource-optimizer-config
+  namespace: default
+data:
+  DEPLOYMENT_NAME: "default-deployment"
+  NAMESPACE: "default"
+  UPDATE_INTERVAL: "5"
+  DQN_STATE_SIZE: "6"
+  DQN_ACTION_SIZE: "5"
+  GA_POPULATION_SIZE: "50"
+  GA_CHROMOSOME_LENGTH: "3"
+  FORECAST_SEQUENCE_LENGTH: "10" 
