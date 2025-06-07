@@ -18,22 +18,37 @@ spec:
       serviceAccountName: resource-optimizer-sa
       containers:
       - name: resource-optimizer
-        image: resource-optimizer:latest
-        imagePullPolicy: IfNotPresent
+        image: your-registry/resource-optimizer:latest
+        ports:
+        - containerPort: 8501
         resources:
           requests:
-            cpu: "500m"
             memory: "512Mi"
+            cpu: "250m"
           limits:
-            cpu: "1000m"
             memory: "1Gi"
+            cpu: "500m"
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
         envFrom:
         - configMapRef:
             name: resource-optimizer-config
         volumeMounts:
-        - name: model-storage
+        - name: models
           mountPath: /app/models
       volumes:
-      - name: model-storage
-        persistentVolumeClaim:
-          claimName: resource-optimizer-pvc 
+      - name: models
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: resource-optimizer
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8501
+  selector:
+    app: resource-optimizer 
