@@ -15,6 +15,33 @@ st.set_page_config(page_title="LSTM + ARIMA MODEL", layout="wide")
 with open('src/static/styles.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
+# Add logo and title in a container
+st.markdown("""
+    <div class="logo-container" style="display: flex; align-items: center; margin-bottom: 1rem;">
+        <div class="logo" style="
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #3498db, #2ecc71);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        ">
+            <span style="
+                color: white;
+                font-size: 24px;
+                font-weight: bold;
+            ">AI</span>
+        </div>
+        <div>
+            <h1 style="margin: 0; color: #2c3e50;">Resource Optimizer</h1>
+            <p style="margin: 0; color: #7f8c8d;">Powered by LSTM + ARIMA</p>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
 # Initialize session state
 if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = []
