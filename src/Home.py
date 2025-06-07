@@ -15,12 +15,22 @@ st.set_page_config(
     layout="wide"
 )
 
-# Add manifest and favicon links
+# Add manifest, favicon, and iOS-specific meta tags
 st.markdown("""
     <link rel="manifest" href="src/static/manifest.json">
     <link rel="icon" type="image/png" sizes="192x192" href="src/static/icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="src/static/icons/icon-512.png">
+    
+    <!-- iOS specific tags -->
     <link rel="apple-touch-icon" href="src/static/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="src/static/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="src/static/icons/icon-180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="src/static/icons/icon-167.png">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Resource Optimizer">
+    
     <meta name="theme-color" content="#3498db">
 """, unsafe_allow_html=True)
 
