@@ -188,20 +188,9 @@ st.header("📬 Get in Touch")
 st.markdown("""
 If you'd like to learn more about our project or collaborate with us, please reach out:
 
-- 📧 Email: team@cloudoptimizer.ai
-- 📱 LinkedIn: Cloud Resource Optimizer Team
+
+
 - 📍 Location: Vishwakarma Institute of Technology
 """)
 
 # Footer
-st.markdown("---")
-st.markdown("### 🤝 Join Our Team")
-st.markdown("""
-We're always looking for talented individuals to join our team! If you're passionate about:
-- Cloud Computing
-- Machine Learning
-- Software Development
-- DevOps & Infrastructure
-
-Check out our [careers page](#) for current openings.
-""") 
